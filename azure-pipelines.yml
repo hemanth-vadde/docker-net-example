@@ -1,17 +1,23 @@
+
+
+# Docker
+# Build and push an image to Azure Container Registry
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
 # Docker
 # Build and push an image to Azure Container Registry
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
-- main
+- master
 
 resources:
 - repo: self
 
 variables:
   # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: 'a7affb8d-56ff-4a76-a81a-b3899fd87d8c'
-  imageRepository: 'dockernetexample'
+  dockerRegistryServiceConnection: '886a4e04-436a-4191-8e04-0cbdfe441398'
+  imageRepository: 'hemanthvaddedotnotcoredocker'
   containerRegistry: 'acrom.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
@@ -20,20 +26,36 @@ variables:
   vmImageName: 'ubuntu-latest'
 
 stages:
-- stage: Build
-  displayName: Build and push stage
+# - stage: Build
+#   displayName: Build and push stage
+#   jobs:
+#   - job: Build
+#     displayName: Build
+#     pool:
+#       vmImage: $(vmImageName)
+#     steps:
+#     - task: Docker@2
+#       displayName: Build and push an image to container registry
+#       inputs:
+#         command: buildAndPush
+#         repository: $(imageRepository)
+#         dockerfile: $(dockerfilePath)
+#         containerRegistry: $(dockerRegistryServiceConnection)
+#         tags: |
+#           $(tag)
+
+- stage: Deploy
+  displayName: Deploy the containers to app service
   jobs:
-  - job: Build
-    displayName: Build
+  - job: Deploy
+    displayName: Deploy
     pool:
       vmImage: $(vmImageName)
     steps:
-    - task: Docker@2
-      displayName: Build and push an image to container registry
+    - task: AzureWebAppContainer@1
       inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          $(tag)
+        azureSubscription: 'Free Trial(4)(e3f480bc-27ad-49d9-b163-8c88c7d0ea9e)'
+        appName: 'OrderMutation'
+        containers: 'hemanthvaddedotnotcoredocker'
+        multicontainerConfigFile: '$(Build.SourcesDirectory)/Dockerfile'
+        containerCommand: 'buildAnddeploy'
